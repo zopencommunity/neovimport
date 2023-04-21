@@ -1,0 +1,49 @@
+export ZOPEN_GIT_URL="https://github.com/neovim/neovim.git"
+export ZOPEN_GIT_DEPS="curl cmake make lua"
+export ZOPEN_TYPE="GIT"
+
+export ZOPEN_CONFIGURE="cmake"
+export ZOPEN_CONFIGURE_OPTS=" -B ../build --install-prefix \$ZOPEN_INSTALL_DIR/ ."
+
+export ZOPEN_MAKE="cmake"
+export ZOPEN_MAKE_OPTS=" --build ../build --target all"
+export ZOPEN_MINIMAL=Y
+
+export ZOPEN_INSTALL="cmake"
+export ZOPEN_INSTALL_OPTS=" --install ../build "
+
+zopen_init()
+{
+  if ! ( package.loaded("lpeg") | grep -q lpeg ); then
+    luarocks install lpeg
+  fi
+}
+
+zopen_check_results()
+{
+  dir="$1"
+  pfx="$2"
+  chk="$1/$2_check.log"
+
+  # Echo the following information to gauge build health
+  echo "actualFailures:0"
+  echo "totalTests:1"
+  echo "expectedFailures:0"
+}
+
+zopen_append_to_env()
+{
+  # echo envars outside of PATH, MANPATH, LIBPATH
+}
+
+zopen_append_to_setup()
+{
+  # echo commands that will run when installing via setup.sh
+}
+
+zopen_get_version()
+{
+  # Modify to echo the version of your tool/library
+  # Rather than hardcoding the version, obtain the version by running the tool/library
+  echo "1.0.0"
+}
