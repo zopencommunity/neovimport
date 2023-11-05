@@ -1,6 +1,9 @@
-export ZOPEN_GIT_URL="https://github.com/neovim/neovim.git"
-export ZOPEN_GIT_DEPS="curl cmake make lua"
-export ZOPEN_TYPE="GIT"
+# bump: neovim-version /NEOV_VERSION="(.*)"/ https://github.com/neovim/neovim.git|semver:*
+NEOV_VERSION="0.9.4"
+
+export ZOPEN_DEV_URL="https://github.com/neovim/neovim.git"
+export ZOPEN_DEV_DEPS="curl cmake make lua"
+export ZOPEN_BUILD_LINE="DEV"
 
 export ZOPEN_CONFIGURE="cmake"
 export ZOPEN_CONFIGURE_OPTS=" -B ../build --install-prefix \$ZOPEN_INSTALL_DIR/ ."
@@ -43,7 +46,5 @@ zopen_append_to_setup()
 
 zopen_get_version()
 {
-  # Modify to echo the version of your tool/library
-  # Rather than hardcoding the version, obtain the version by running the tool/library
-  echo "1.0.0"
+  echo "$NEOV_VERSION""
 }
