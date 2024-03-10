@@ -1,0 +1,278 @@
+diff --git a/cmake.deps/cmake/LibvtermCMakeLists.txt b/cmake.deps/cmake/LibvtermCMakeLists.txt
+index 41c79a915..f3f8a9e51 100644
+--- a/cmake.deps/cmake/LibvtermCMakeLists.txt
++++ b/cmake.deps/cmake/LibvtermCMakeLists.txt
+@@ -72,7 +72,7 @@ install(TARGETS vterm ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+ install(FILES include/vterm.h include/vterm_keycodes.h
+   DESTINATION include)
+ 
+-if(NOT WIN32)
++if(NOT WIN32 AND NOT ZOS)
+   file(GLOB BIN_SOURCES ${CMAKE_SOURCE_DIR}/bin/*.c)
+   foreach(EXE_C ${BIN_SOURCES})
+     get_filename_component(target_name ${EXE_C} NAME_WE)
+diff --git a/cmake.deps/cmake/LpegCMakeLists.txt b/cmake.deps/cmake/LpegCMakeLists.txt
+index 4dcf3a1b7..8ad732f5f 100644
+--- a/cmake.deps/cmake/LpegCMakeLists.txt
++++ b/cmake.deps/cmake/LpegCMakeLists.txt
+@@ -4,10 +4,10 @@ project (lpeg C)
+ include(GNUInstallDirs)
+ 
+ file(GLOB LPEG_SOURCES ${CMAKE_SOURCE_DIR}/*.c)
+-add_library(lpeg ${LPEG_SOURCES})
++add_library(lpeg SHARED ${LPEG_SOURCES})
+ 
+ target_compile_options(lpeg PRIVATE -w)
+ 
+-install(TARGETS lpeg ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
++install(TARGETS lpeg LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+ 
+ # vim: set ft=cmake:
+diff --git a/src/nvim/CMakeLists.txt b/src/nvim/CMakeLists.txt
+index 54ad43e8f..6b9756cf3 100644
+--- a/src/nvim/CMakeLists.txt
++++ b/src/nvim/CMakeLists.txt
+@@ -134,10 +134,6 @@ elseif(CMAKE_C_COMPILER_ID MATCHES "Clang")
+     target_compile_options(main_lib INTERFACE -Wno-c11-extensions)
+   endif()
+ 
+-  # workaround for clang-11 on macOS, supported on later versions
+-  if(NOT APPLE)
+-    target_link_libraries(nvim_bin PRIVATE -Wl,--no-undefined)
+-  endif()
+ endif()
+ 
+ # Platform specific options
+@@ -470,7 +466,6 @@ endif()
+ if(MSVC)
+   list(APPEND gen_cflags -wd4003)
+ endif()
+-list(APPEND gen_cflags -O2)
+ 
+ set(NVIM_VERSION_GIT_H ${PROJECT_BINARY_DIR}/cmake.config/auto/versiondef_git.h)
+ add_custom_target(update_version_stamp
+@@ -524,7 +519,7 @@ foreach(sfile ${NVIM_SOURCES}
+   if(MSVC)
+     set(PREPROC_OUTPUT /P /Fi${gf_i} /nologo)
+   else()
+-    set(PREPROC_OUTPUT -E -o ${gf_i})
++    set(PREPROC_OUTPUT -E)
+   endif()
+ 
+   set(depends "${HEADER_GENERATOR}" "${sfile}" "${LUA_GEN_DEPS}")
+@@ -532,9 +527,16 @@ foreach(sfile ${NVIM_SOURCES}
+     # Ensure auto/versiondef_git.h exists after "make clean".
+     list(APPEND depends update_version_stamp "${NVIM_VERSION_GIT_H}" "${NVIM_VERSION_DEF_H}")
+   endif()
++
++# Remove the leading and trailing quotes if they exist
++string(REGEX REPLACE "^\"|\"$" "" EXTRA_CFLAGS ${EXTRA_CFLAGS})
++
++# Split the string into a list based on spaces
++string(REPLACE " " ";" C_FLAGS_LIST ${EXTRA_CFLAGS})
++
+   add_custom_command(
+     OUTPUT "${gf_c_h}" "${gf_h_h}"
+-    COMMAND ${CMAKE_C_COMPILER} ${sfile} ${PREPROC_OUTPUT} ${gen_cflags}
++    COMMAND ${CMAKE_C_COMPILER} ${sfile} ${PREPROC_OUTPUT} ${gen_cflags} ${C_FLAGS_LIST} > ${gf_i}
+     COMMAND ${LUA_GEN} "${HEADER_GENERATOR}" "${sfile}" "${gf_c_h}" "${gf_h_h}" "${gf_i}"
+     DEPENDS ${depends})
+   list(APPEND NVIM_GENERATED_FOR_SOURCES "${gf_c_h}")
+diff --git a/src/nvim/bufwrite.c b/src/nvim/bufwrite.c
+index 94a6604fc..d4b53b7e1 100644
+--- a/src/nvim/bufwrite.c
++++ b/src/nvim/bufwrite.c
+@@ -756,7 +756,7 @@ static int buf_write_make_backup(char *fname, bool append, FileInfo *file_info_o
+         }
+       }
+       int fd = os_open(IObuff,
+-                       O_CREAT|O_WRONLY|O_EXCL|O_NOFOLLOW, perm);
++                       O_CREAT|O_WRONLY|O_EXCL, perm);
+       if (fd < 0) {           // can't write in directory
+         *backup_copyp = true;
+       } else {
+@@ -1854,7 +1854,7 @@ restore_backup:
+ 
+       if (org == NULL
+           || (empty_fd = os_open(org,
+-                                 O_CREAT | O_EXCL | O_NOFOLLOW,
++                                 O_CREAT | O_EXCL ,
+                                  perm < 0 ? 0666 : (perm & 0777))) < 0) {
+         emsg(_(e_patchmode_cant_touch_empty_original_file));
+       } else {
+diff --git a/src/nvim/fileio.c b/src/nvim/fileio.c
+index 2c96e4bd8..5755b8c9e 100644
+--- a/src/nvim/fileio.c
++++ b/src/nvim/fileio.c
+@@ -2710,7 +2710,7 @@ int vim_rename(const char *from, const char *to)
+   }
+ 
+   // Create the new file with same permissions as the original.
+-  int fd_out = os_open(to, O_CREAT|O_EXCL|O_WRONLY|O_NOFOLLOW, perm);
++  int fd_out = os_open(to, O_CREAT|O_EXCL|O_WRONLY, perm);
+   if (fd_out < 0) {
+     close(fd_in);
+     os_free_acl(acl);
+diff --git a/src/nvim/memfile.c b/src/nvim/memfile.c
+index fb9f2eb8d..271a8fb0b 100644
+--- a/src/nvim/memfile.c
++++ b/src/nvim/memfile.c
+@@ -750,7 +750,7 @@ static bool mf_do_open(memfile_T *mfp, char *fname, int flags)
+     emsg(_("E300: Swap file already exists (symlink attack?)"));
+   } else {
+     // try to open the file
+-    mfp->mf_fd = os_open(mfp->mf_fname, flags | O_NOFOLLOW, S_IREAD | S_IWRITE);
++    mfp->mf_fd = os_open(mfp->mf_fname, flags, S_IREAD | S_IWRITE);
+   }
+ 
+   // If the file cannot be opened, use memory only
+diff --git a/src/nvim/os/pty_process_unix.c b/src/nvim/os/pty_process_unix.c
+index 4d34e8fac..9c976325d 100644
+--- a/src/nvim/os/pty_process_unix.c
++++ b/src/nvim/os/pty_process_unix.c
+@@ -15,6 +15,8 @@
+ # include <libutil.h>
+ #elif defined(__OpenBSD__) || defined(__NetBSD__) || defined(__APPLE__)
+ # include <util.h>
++#elif defined(__MVS__)
++# include <fcntl.h>
+ #elif defined(__sun)
+ # include <fcntl.h>
+ # include <signal.h>
+@@ -46,7 +48,87 @@
+ # include "os/pty_process_unix.c.generated.h"
+ #endif
+ 
+-#if defined(__sun) && !defined(HAVE_FORKPTY)
++#if defined(__MVS__)
++static int openpty(int *master, int *slave, char *name, struct termios *termp, struct winsize *winp) {
++    int fd;
++    char master_dev[TTY_NAME_MAX], slave_dev[TTY_NAME_MAX];
++    pid_t pid;
++
++    // Iterating through the 4-digit ptyp and ttyp devices
++    for (int i = 0; i < 10000; i++) {  // Maximum 9999 for 4-digit format
++        snprintf(master_dev, sizeof(master_dev), "/dev/ptyp%04d", i);
++        snprintf(slave_dev, sizeof(slave_dev), "/dev/ttyp%04d", i);
++
++        if ((*master = open(master_dev, O_RDWR | O_NOCTTY)) != -1) {
++        if (grantpt(*master) != 0)
++         return -1;
++        if (unlockpt(*master) != 0)
++         return -1;
++
++            if ((*slave = open(slave_dev, O_RDWR | O_NOCTTY)) != -1) {
++                break;  // Found an available pair
++            }
++        }
++    }
++
++
++    if (termp) {
++        tcsetattr(*slave, TCSAFLUSH, termp);
++    }
++    if (winp) {
++        ioctl(*slave, TIOCSWINSZ, winp);
++    }
++
++    // ignoring name, not passed and size is unknown in the API
++
++    return 0;
++
++error:
++    if (*slave != -1) {
++        close(*slave);
++    }
++    if (*master != -1) {
++        close(*master);
++    }
++    return -1;
++}
++
++static int login_tty(int fd) {
++    setsid();
++
++    dup2(fd, STDIN_FILENO);
++    dup2(fd, STDOUT_FILENO);
++    dup2(fd, STDERR_FILENO);
++    if (fd > STDERR_FILENO) {
++        close(fd);
++    }
++
++    return 0;
++}
++
++static pid_t forkpty(int *amaster, char *name, struct termios *termp, struct winsize *winp) {
++    int master, slave;
++    if (openpty(&master, &slave, name, termp, winp) == -1) {
++        return -1;
++    }
++
++    pid_t pid = fork();
++    switch (pid) {
++        case -1:
++            close(master);
++            close(slave);
++            return -1;
++        case 0:
++            close(master);
++            login_tty(slave);
++            return 0;
++        default:
++            close(slave);
++            *amaster = master;
++            return pid;
++    }
++}
++#elif defined(__sun) && !defined(HAVE_FORKPTY)
+ 
+ // this header defines STR, just as nvim.h, but it is defined as ('S'<<8),
+ // to avoid #undef STR, #undef STR, #define STR ('S'<<8) just delay the
+@@ -338,14 +420,14 @@ static void init_termios(struct termios *termios) FUNC_ATTR_NONNULL_ALL
+   termios->c_cc[VERASE] = 0x7f;
+   termios->c_cc[VKILL] = 0x1f & 'U';
+   termios->c_cc[VEOF] = 0x1f & 'D';
+-  termios->c_cc[VEOL] = _POSIX_VDISABLE;
+-  termios->c_cc[VEOL2] = _POSIX_VDISABLE;
++  //termios->c_cc[VEOL] = _POSIX_VDISABLE;
++  //termios->c_cc[VEOL2] = _POSIX_VDISABLE;
+   termios->c_cc[VSTART] = 0x1f & 'Q';
+   termios->c_cc[VSTOP] = 0x1f & 'S';
+   termios->c_cc[VSUSP] = 0x1f & 'Z';
+-  termios->c_cc[VREPRINT] = 0x1f & 'R';
+-  termios->c_cc[VWERASE] = 0x1f & 'W';
+-  termios->c_cc[VLNEXT] = 0x1f & 'V';
++  //termios->c_cc[VREPRINT] = 0x1f & 'R';
++  //termios->c_cc[VWERASE] = 0x1f & 'W';
++  //termios->c_cc[VLNEXT] = 0x1f & 'V';
+   termios->c_cc[VMIN] = 1;
+   termios->c_cc[VTIME] = 0;
+ }
+diff --git a/src/nvim/undo.c b/src/nvim/undo.c
+index e9170ba85..9e353ca20 100644
+--- a/src/nvim/undo.c
++++ b/src/nvim/undo.c
+@@ -1260,7 +1260,7 @@ void u_write_undo(const char *const name, const bool forceit, buf_T *const buf,
+     goto theend;
+   }
+ 
+-  fd = os_open(file_name, O_CREAT|O_WRONLY|O_EXCL|O_NOFOLLOW, perm);
++  fd = os_open(file_name, O_CREAT|O_WRONLY|O_EXCL, perm);
+   if (fd < 0) {
+     semsg(_(e_not_open), file_name);
+     goto theend;
+diff --git a/src/termkey/termkey.c b/src/termkey/termkey.c
+index 832e5a9a9..a608700ab 100644
+--- a/src/termkey/termkey.c
++++ b/src/termkey/termkey.c
+@@ -517,8 +517,8 @@ int termkey_start(TermKey *tk)
+         termios.c_lflag &= ~ISIG;
+       else {
+         /* Disable Ctrl-\==VQUIT and Ctrl-D==VSUSP but leave Ctrl-C as SIGINT */
+-        termios.c_cc[VQUIT] = _POSIX_VDISABLE;
+-        termios.c_cc[VSUSP] = _POSIX_VDISABLE;
++        //termios.c_cc[VQUIT] = _POSIX_VDISABLE;
++        //termios.c_cc[VSUSP] = _POSIX_VDISABLE;
+         /* Some OSes have Ctrl-Y==VDSUSP */
+ #ifdef VDSUSP
+         termios.c_cc[VDSUSP] = _POSIX_VDISABLE;

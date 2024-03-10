@@ -1,25 +1,32 @@
 # bump: neovim-version /NEOV_VERSION="(.*)"/ https://github.com/neovim/neovim.git|semver:*
 NEOV_VERSION="0.9.5"
 
-export ZOPEN_DEV_URL="https://github.com/neovim/neovim.git"
-export ZOPEN_DEV_DEPS="curl cmake make lua"
-export ZOPEN_BUILD_LINE="DEV"
+export ZOPEN_GIT_URL="https://github.com/neovim/neovim.git"
+export ZOPEN_GIT_DEPS="curl cmake make lua zoslib luarocks coreutils unzip zip gzip tar libuv luv getopt gettext lpeg"
+export ZOPEN_TYPE="GIT"
+export ZOPEN_COMP="CLANG"
 
-export ZOPEN_CONFIGURE="cmake"
-export ZOPEN_CONFIGURE_OPTS=" -B ../build --install-prefix \$ZOPEN_INSTALL_DIR/ ."
+export ZOPEN_CONFIGURE="skip"
 
-export ZOPEN_MAKE="cmake"
-export ZOPEN_MAKE_OPTS=" --build ../build --target all"
-export ZOPEN_MINIMAL=Y
+export ZOPEN_MAKE="zopen_build"
+export ZOPEN_INSTALL="zopen_install"
 
-export ZOPEN_INSTALL="cmake"
-export ZOPEN_INSTALL_OPTS=" --install ../build "
+zopen_install() {
+  mkdir -p $ZOPEN_INSTALL_DIR
+  make -j$ZOPEN_NUM_JOBS install
+}
 
-zopen_init()
-{
-  if ! ( package.loaded("lpeg") | grep -q lpeg ); then
-    luarocks install lpeg
-  fi
+zopen_build() {
+  // Change to release for debug
+  LIBPATH="$LPEG_HOME/lib:$LIBPATH" make "$@" CMAKE_INSTALL_PREFIX="$ZOPEN_INSTALL_DIR" CMAKE_BUILD_TYPE=Release CMAKE_EXTRA_FLAGS="-DEXTRA_CFLAGS=\"-isystem${ZOSLIB_HOME}/include -I${LUV_HOME}/include $CPPFLAGS\" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=${CXX}  -DCMAKE_C_COMPILER="$CC" -DCMAKE_C_FLAGS=\"${CPPFLAGS} ${CFLAGS}\" -DCMAKE_C_FLAGS_RELEASE=\"${CPPFLAGS} ${CFLAGS}\" -DCOMPILE_FLAGS=\"${CPPFLAGS} ${CFLAGS}\" -DCMAKE_CXX_FLAGS=\"${CPPFLAGS} ${CFLAGS}\"  -DCMAKE_CXX_LINK_LIBRARY_FLAG=\"${LDFLAGS}\"  -DCMAKE_C_LINK_LIBRARY_FLAG=\"${LDFLAGS}\" -DCMAKE_CXX_STANDARD_LIBRARIES=\"${LIBS}\"  -DCMAKE_C_STANDARD_LIBRARIES=\"${LIBS}\" -DPREFER_LUA=ON -DENABLE_LIBINTL=OFF -DLIBUV_INCLUDE_DIR=\"$LIBUV_HOME/include\" -DGETTEXT_INCLUDE_DIR="$GETTEXT_HOME/include" -DGETTEXT_LIBRARIES="$GETTEXT_HOME/lib"  -DLUA_LIBRARIES="$LUA_HOME/lib" -DLUA_INCLUDE_DIR="$LUA_HOME/include" -DLIBUV_LIBRARY=\"$LIBUV_HOME/lib\" -DLUV_INCLUDE_DIR="$LUV_HOME/lib/lua" -DLPEG_LIBRARY="$LPEG_HOME/lib/lpeg.x"  -DLUV_LIBRARY="$LUV_HOME/lib/libluv.a"" BUNDLED_CMAKE_FLAG="-DUSE_BUNDLED=OFF -DLUV_INCLUDE_DIR="$LUV_HOME/lib/lua" -DLIBUV_LIBRARIES="$LIBUV_HOME/lib" -DLIBUV_LIBRARY="$LIBUV_HOME/lib/libuv.a" -DLIBUV_INCLUDE_DIR="$LIBUV_HOME/include" -DLUA_LIBRARIES="$LUA_HOME/lib" -DLUA_INCLUDE_DIR="$LUA_HOME/include" -DUSE_BUNDLED_LUV=OFF -DUSE_BUNDLED_TS=ON -DUSE_BUNDLED_LIBVTERM=ON -DUSE_BUNDLED_LPEG=OFF -DUSE_BUNDLED_LIBUV=OFF -DUSE_BUNDLED_MSGPACK=ON -DUSE_BUNDLED_UNIBILIUM=ON -DENABLE_LIBINTL=OFF -DUSE_BUNDLED_GETTEXT=OFF" DEPS_CMAKE_FLAGS="-DCMAKE_BUILD_TYPE=Release -DCMAKE_C_STANDARD_LIBRARIES=\"${LIBS}\" -DCMAKE_CXX_STANDARD_LIBRARIES=\"${LIBS}\" -DCMAKE_CXX_LINK_LIBRARY_FLAG=\"${LDFLAGS}\"  -DCMAKE_C_LINK_LIBRARY_FLAG=\"${LDFLAGS}\""
+}
+
+zopen_pre_patch() {
+  # Add missing flags:
+  export CFLAGS="$CFLAGS $CPPFLAGS"
+  export CFLAGS="$CFLAGS -fvisibility=default -I$LUV_HOME/include/"
+  export LIBS="$LIBS -luv -llua -lzoslib -lluv"
+  export LDFLAGS="$LDFLAGS -L\"$LIBUV_HOME/lib\" -L\"$LUA_HOME/lib\" -L\"$LUV_HOME/lib\""
 }
 
 zopen_check_results()
