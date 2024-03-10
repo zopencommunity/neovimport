@@ -53,5 +53,5 @@ zopen_append_to_setup()
 
 zopen_get_version()
 {
-  echo "$NEOV_VERSION""
+  echo "$NEOV_VERSION"
 }
