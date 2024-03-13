@@ -5,6 +5,7 @@ export ZOPEN_GIT_URL="https://github.com/neovim/neovim.git"
 export ZOPEN_GIT_DEPS="curl cmake make lua zoslib luarocks coreutils unzip zip gzip tar libuv luv getopt gettext lpeg"
 export ZOPEN_TYPE="GIT"
 export ZOPEN_COMP="CLANG"
+export ZOPEN_RUNTIME_DEPS="lpeg"
 
 export ZOPEN_CONFIGURE="skip"
 
