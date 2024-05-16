@@ -1,5 +1,5 @@
 # bump: neovim-version /NEOV_VERSION="(.*)"/ https://github.com/neovim/neovim.git|semver:*
-NEOV_VERSION="0.9.5"
+NEOV_VERSION="0.10.0"
 
 export ZOPEN_GIT_URL="https://github.com/neovim/neovim.git"
 export ZOPEN_GIT_DEPS="curl cmake make lua zoslib luarocks coreutils unzip zip gzip tar libuv luv getopt gettext lpeg"
