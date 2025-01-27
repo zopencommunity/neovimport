@@ -1,0 +1,13 @@
+diff --git a/src/nvim/undo.c b/src/nvim/undo.c
+index ba720c9f6a..9732670430 100644
+--- a/src/nvim/undo.c
++++ b/src/nvim/undo.c
+@@ -1260,7 +1260,7 @@ void u_write_undo(const char *const name, const bool forceit, buf_T *const buf,
+     goto theend;
+   }
+ 
+-  fd = os_open(file_name, O_CREAT|O_WRONLY|O_EXCL|O_NOFOLLOW, perm);
++  fd = os_open(file_name, O_CREAT|O_WRONLY|O_EXCL, perm);
+   if (fd < 0) {
+     semsg(_(e_not_open), file_name);
+     goto theend;

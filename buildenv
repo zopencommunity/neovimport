@@ -1,13 +1,13 @@
 # bump: neovim-version /NEOV_VERSION="(.*)"/ https://github.com/neovim/neovim.git|semver:*
-NEOV_VERSION="0.9.5"
+NEOV_VERSION="0.10.3"
 
-export ZOPEN_GIT_URL="https://github.com/neovim/neovim.git"
+export ZOPEN_STABLE_URL="https://github.com/neovim/neovim.git"
 export ZOPEN_CATEGORIES="editor"
-export ZOPEN_GIT_DEPS="curl cmake make lua zoslib luarocks coreutils unzip zip gzip tar libuv luv getopt gettext lpeg"
-export ZOPEN_TYPE="GIT"
+export ZOPEN_STABLE_DEPS="curl cmake make lua zoslib luarocks coreutils unzip zip gzip tar libuv luv getopt gettext lpeg"
+export ZOPEN_BUILD_LINE="STABLE"
 export ZOPEN_COMP="CLANG"
 export ZOPEN_RUNTIME_DEPS="lpeg"
-
+export ZOPEN_STABLE_TAG="v${NEOV_VERSION}"
 export ZOPEN_CONFIGURE="skip"
 
 export ZOPEN_MAKE="zopen_build"
@@ -55,5 +55,5 @@ zopen_append_to_setup()
 
 zopen_get_version()
 {
-  echo "$NEOV_VERSION"
+  ./build/bin/nvim -v | awk '/^NVIM/ {print $2}' | sed 's/v//'
 }

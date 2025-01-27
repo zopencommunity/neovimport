@@ -1,0 +1,17 @@
+diff --git a/cmake.deps/cmake/LpegCMakeLists.txt b/cmake.deps/cmake/LpegCMakeLists.txt
+index 4dcf3a1b77..8ad732f5fd 100644
+--- a/cmake.deps/cmake/LpegCMakeLists.txt
++++ b/cmake.deps/cmake/LpegCMakeLists.txt
+@@ -4,10 +4,10 @@ project (lpeg C)
+ include(GNUInstallDirs)
+ 
+ file(GLOB LPEG_SOURCES ${CMAKE_SOURCE_DIR}/*.c)
+-add_library(lpeg ${LPEG_SOURCES})
++add_library(lpeg SHARED ${LPEG_SOURCES})
+ 
+ target_compile_options(lpeg PRIVATE -w)
+ 
+-install(TARGETS lpeg ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
++install(TARGETS lpeg LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+ 
+ # vim: set ft=cmake:

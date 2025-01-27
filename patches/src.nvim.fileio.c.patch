@@ -1,0 +1,13 @@
+diff --git a/src/nvim/fileio.c b/src/nvim/fileio.c
+index df9c4928c9..bd710dc673 100644
+--- a/src/nvim/fileio.c
++++ b/src/nvim/fileio.c
+@@ -2710,7 +2710,7 @@ int vim_rename(const char *from, const char *to)
+   }
+ 
+   // Create the new file with same permissions as the original.
+-  int fd_out = os_open(to, O_CREAT|O_EXCL|O_WRONLY|O_NOFOLLOW, perm);
++  int fd_out = os_open(to, O_CREAT|O_EXCL|O_WRONLY, perm);
+   if (fd_out < 0) {
+     close(fd_in);
+     os_free_acl(acl);

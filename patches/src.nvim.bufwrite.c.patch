@@ -1,0 +1,22 @@
+diff --git a/src/nvim/bufwrite.c b/src/nvim/bufwrite.c
+index 27de03954a..94d33ddb85 100644
+--- a/src/nvim/bufwrite.c
++++ b/src/nvim/bufwrite.c
+@@ -756,7 +756,7 @@ static int buf_write_make_backup(char *fname, bool append, FileInfo *file_info_o
+         }
+       }
+       int fd = os_open(IObuff,
+-                       O_CREAT|O_WRONLY|O_EXCL|O_NOFOLLOW, perm);
++                       O_CREAT|O_WRONLY|O_EXCL, perm);
+       if (fd < 0) {           // can't write in directory
+         *backup_copyp = true;
+       } else {
+@@ -1847,7 +1847,7 @@ restore_backup:
+ 
+       if (org == NULL
+           || (empty_fd = os_open(org,
+-                                 O_CREAT | O_EXCL | O_NOFOLLOW,
++                                 O_CREAT | O_EXCL ,
+                                  perm < 0 ? 0666 : (perm & 0777))) < 0) {
+         emsg(_(e_patchmode_cant_touch_empty_original_file));
+       } else {

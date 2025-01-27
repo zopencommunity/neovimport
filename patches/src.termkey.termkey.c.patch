@@ -1,0 +1,15 @@
+diff --git a/src/termkey/termkey.c b/src/termkey/termkey.c
+index 832e5a9a9e..a608700ab4 100644
+--- a/src/termkey/termkey.c
++++ b/src/termkey/termkey.c
+@@ -517,8 +517,8 @@ int termkey_start(TermKey *tk)
+         termios.c_lflag &= ~ISIG;
+       else {
+         /* Disable Ctrl-\==VQUIT and Ctrl-D==VSUSP but leave Ctrl-C as SIGINT */
+-        termios.c_cc[VQUIT] = _POSIX_VDISABLE;
+-        termios.c_cc[VSUSP] = _POSIX_VDISABLE;
++        //termios.c_cc[VQUIT] = _POSIX_VDISABLE;
++        //termios.c_cc[VSUSP] = _POSIX_VDISABLE;
+         /* Some OSes have Ctrl-Y==VDSUSP */
+ #ifdef VDSUSP
+         termios.c_cc[VDSUSP] = _POSIX_VDISABLE;
