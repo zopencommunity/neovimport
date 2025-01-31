@@ -1,0 +1,47 @@
+diff --git a/src/nvim/channel.c b/src/nvim/channel.c
+index 41635747f8..5aeb24efe4 100644
+--- a/src/nvim/channel.c
++++ b/src/nvim/channel.c
+@@ -49,6 +49,31 @@
+ # include "nvim/os/pty_conpty_win.h"
+ #endif
+ 
++#ifdef __MVS__
++int dupfd_cloexec(int oldfd, int minfd) {
++    int newfd = fcntl(oldfd, F_DUPFD, minfd);
++    if (newfd == -1) {
++        perror("fcntl(F_DUPFD) failed");
++        return -1;
++    }
++
++    int flags = fcntl(newfd, F_GETFD);
++    if (flags == -1) {
++        perror("fcntl(F_GETFD) failed");
++        close(newfd);
++        return -1;
++    }
++
++    if (fcntl(newfd, F_SETFD, flags | FD_CLOEXEC) == -1) {
++        perror("fcntl(F_SETFD) failed");
++        close(newfd);
++        return -1;
++    }
++
++    return newfd;
++}
++#endif
++
+ static bool did_stdio = false;
+ 
+ /// next free id for a job or rpc channel
+@@ -547,8 +572,8 @@ uint64_t channel_from_stdio(bool rpc, CallbackReader on_output, const char **err
+     // Redirect stdout/stdin (the UI channel) to stderr. Use fnctl(F_DUPFD_CLOEXEC) instead of dup()
+     // to prevent child processes from inheriting the file descriptors, which are used by UIs to
+     // detect when Nvim exits.
+-    stdin_dup_fd = fcntl(STDIN_FILENO, F_DUPFD_CLOEXEC, STDERR_FILENO + 1);
+-    stdout_dup_fd = fcntl(STDOUT_FILENO, F_DUPFD_CLOEXEC, STDERR_FILENO + 1);
++    stdin_dup_fd = dupfd_cloexec(STDIN_FILENO, STDERR_FILENO + 1);
++    stdout_dup_fd = dupfd_cloexec(STDOUT_FILENO, STDERR_FILENO + 1);
+     dup2(STDERR_FILENO, STDOUT_FILENO);
+     dup2(STDERR_FILENO, STDIN_FILENO);
+   }
