@@ -1,5 +1,5 @@
 diff --git a/src/nvim/os/pty_process_unix.c b/src/nvim/os/pty_process_unix.c
-index 4d34e8fac4..9c976325db 100644
+index 4d34e8fac4..4195972b4a 100644
 --- a/src/nvim/os/pty_process_unix.c
 +++ b/src/nvim/os/pty_process_unix.c
 @@ -15,6 +15,8 @@
@@ -11,96 +11,15 @@ index 4d34e8fac4..9c976325db 100644
  #elif defined(__sun)
  # include <fcntl.h>
  # include <signal.h>
-@@ -46,7 +48,87 @@
+@@ -46,6 +48,7 @@
  # include "os/pty_process_unix.c.generated.h"
  #endif
  
--#if defined(__sun) && !defined(HAVE_FORKPTY)
-+#if defined(__MVS__)
-+static int openpty(int *master, int *slave, char *name, struct termios *termp, struct winsize *winp) {
-+    int fd;
-+    char master_dev[TTY_NAME_MAX], slave_dev[TTY_NAME_MAX];
-+    pid_t pid;
 +
-+    // Iterating through the 4-digit ptyp and ttyp devices
-+    for (int i = 0; i < 10000; i++) {  // Maximum 9999 for 4-digit format
-+        snprintf(master_dev, sizeof(master_dev), "/dev/ptyp%04d", i);
-+        snprintf(slave_dev, sizeof(slave_dev), "/dev/ttyp%04d", i);
-+
-+        if ((*master = open(master_dev, O_RDWR | O_NOCTTY)) != -1) {
-+        if (grantpt(*master) != 0)
-+         return -1;
-+        if (unlockpt(*master) != 0)
-+         return -1;
-+
-+            if ((*slave = open(slave_dev, O_RDWR | O_NOCTTY)) != -1) {
-+                break;  // Found an available pair
-+            }
-+        }
-+    }
-+
-+
-+    if (termp) {
-+        tcsetattr(*slave, TCSAFLUSH, termp);
-+    }
-+    if (winp) {
-+        ioctl(*slave, TIOCSWINSZ, winp);
-+    }
-+
-+    // ignoring name, not passed and size is unknown in the API
-+
-+    return 0;
-+
-+error:
-+    if (*slave != -1) {
-+        close(*slave);
-+    }
-+    if (*master != -1) {
-+        close(*master);
-+    }
-+    return -1;
-+}
-+
-+static int login_tty(int fd) {
-+    setsid();
-+
-+    dup2(fd, STDIN_FILENO);
-+    dup2(fd, STDOUT_FILENO);
-+    dup2(fd, STDERR_FILENO);
-+    if (fd > STDERR_FILENO) {
-+        close(fd);
-+    }
-+
-+    return 0;
-+}
-+
-+static pid_t forkpty(int *amaster, char *name, struct termios *termp, struct winsize *winp) {
-+    int master, slave;
-+    if (openpty(&master, &slave, name, termp, winp) == -1) {
-+        return -1;
-+    }
-+
-+    pid_t pid = fork();
-+    switch (pid) {
-+        case -1:
-+            close(master);
-+            close(slave);
-+            return -1;
-+        case 0:
-+            close(master);
-+            login_tty(slave);
-+            return 0;
-+        default:
-+            close(slave);
-+            *amaster = master;
-+            return pid;
-+    }
-+}
-+#elif defined(__sun) && !defined(HAVE_FORKPTY)
+ #if defined(__sun) && !defined(HAVE_FORKPTY)
  
  // this header defines STR, just as nvim.h, but it is defined as ('S'<<8),
- // to avoid #undef STR, #undef STR, #define STR ('S'<<8) just delay the
-@@ -338,14 +420,14 @@ static void init_termios(struct termios *termios) FUNC_ATTR_NONNULL_ALL
+@@ -338,14 +341,14 @@ static void init_termios(struct termios *termios) FUNC_ATTR_NONNULL_ALL
    termios->c_cc[VERASE] = 0x7f;
    termios->c_cc[VKILL] = 0x1f & 'U';
    termios->c_cc[VEOF] = 0x1f & 'D';
