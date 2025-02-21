@@ -1,0 +1,13 @@
+diff --git a/cmake.deps/cmake/BuildTreesitterParsers.cmake b/cmake.deps/cmake/BuildTreesitterParsers.cmake
+index 060447e6fe..70d9672648 100644
+--- a/cmake.deps/cmake/BuildTreesitterParsers.cmake
++++ b/cmake.deps/cmake/BuildTreesitterParsers.cmake
+@@ -23,7 +23,7 @@ function(BuildTSParser)
+     PATCH_COMMAND ${CMAKE_COMMAND} -E copy
+       ${CMAKE_CURRENT_SOURCE_DIR}/cmake/${TS_CMAKE_FILE}
+       ${DEPS_BUILD_DIR}/src/${NAME}/CMakeLists.txt
+-    CMAKE_ARGS ${DEPS_CMAKE_ARGS}
++      CMAKE_ARGS ${DEPS_CMAKE_ARGS} -DCMAKE_C_STANDARD_LIBRARIES=${CMAKE_C_STANDARD_LIBRARIES}
+       -D PARSERLANG=${TS_LANG}
+     ${EXTERNALPROJECT_OPTIONS})
+ endfunction()
