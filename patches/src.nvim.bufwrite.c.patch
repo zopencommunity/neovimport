@@ -1,5 +1,5 @@
 diff --git a/src/nvim/bufwrite.c b/src/nvim/bufwrite.c
-index 27de03954a..94d33ddb85 100644
+index 27de03954a..35c0c754fc 100644
 --- a/src/nvim/bufwrite.c
 +++ b/src/nvim/bufwrite.c
 @@ -756,7 +756,7 @@ static int buf_write_make_backup(char *fname, bool append, FileInfo *file_info_o
@@ -11,7 +11,28 @@ index 27de03954a..94d33ddb85 100644
        if (fd < 0) {           // can't write in directory
          *backup_copyp = true;
        } else {
-@@ -1847,7 +1847,7 @@ restore_backup:
+@@ -1477,6 +1477,20 @@ restore_backup:
+         }
+         goto fail;
+       }
++
++#ifdef __MVS__
++      if (newfile == true)
++        __tag_new_file(fd);
++      else if (file_info_old.stat.st_tag.ft_ccsid == FT_UNTAGGED) {
++        __setfdccsid(fd, 0);
++        struct f_cnvrt cvtreq = {SETCVTON, 0, 1047};
++        if (curbuf->needs_conversion)
++          fcntl(fd, F_CONTROL_CVT, &cvtreq);
++      }
++      else
++        __chgfdccsid(fd, file_info_old.stat.st_tag.ft_ccsid);
++#endif
++
+       write_info.bw_fd = fd;
+     }
+     err = set_err(NULL);
+@@ -1847,7 +1861,7 @@ restore_backup:
  
        if (org == NULL
            || (empty_fd = os_open(org,

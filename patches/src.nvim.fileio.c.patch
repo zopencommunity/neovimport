@@ -1,8 +1,19 @@
 diff --git a/src/nvim/fileio.c b/src/nvim/fileio.c
-index df9c4928c9..bd710dc673 100644
+index df9c4928c9..160668c78e 100644
 --- a/src/nvim/fileio.c
 +++ b/src/nvim/fileio.c
-@@ -2710,7 +2710,7 @@ int vim_rename(const char *from, const char *to)
+@@ -439,6 +439,10 @@ int readfile(char *fname, char *sfname, linenr_T from, linenr_T lines_to_skip,
+     fd = os_open(fname, O_RDONLY, 0);
+   }
+ 
++#ifdef __MVS__
++  curbuf->needs_conversion = __file_needs_conversion(fd);
++#endif
++
+   if (fd < 0) {                     // cannot open at all
+     msg_scroll = msg_save;
+     if (!newfile) {
+@@ -2710,7 +2714,7 @@ int vim_rename(const char *from, const char *to)
    }
  
    // Create the new file with same permissions as the original.

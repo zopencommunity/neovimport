@@ -1,0 +1,15 @@
+diff --git a/src/nvim/buffer_defs.h b/src/nvim/buffer_defs.h
+index 512247047c..ce847751fb 100644
+--- a/src/nvim/buffer_defs.h
++++ b/src/nvim/buffer_defs.h
+@@ -381,6 +381,10 @@ struct file_buffer {
+                            // b_ffname
+   char *b_fname;           // current file name, points to b_ffname or
+                            // b_sfname
++			   //
++#ifdef __MVS__
++  int needs_conversion;
++#endif
+ 
+   bool file_id_valid;
+   FileID file_id;
