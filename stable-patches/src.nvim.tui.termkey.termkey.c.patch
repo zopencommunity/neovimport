@@ -1,0 +1,15 @@
+diff --git a/src/nvim/tui/termkey/termkey.c b/src/nvim/tui/termkey/termkey.c
+index eabde2f9f7..c6763875be 100644
+--- a/src/nvim/tui/termkey/termkey.c
++++ b/src/nvim/tui/termkey/termkey.c
+@@ -516,8 +516,10 @@ int termkey_start(TermKey *tk)
+         termios.c_lflag &= (tcflag_t) ~ISIG;
+       } else {
+         // Disable Ctrl-\==VQUIT and Ctrl-D==VSUSP but leave Ctrl-C as SIGINT
++#ifndef __MVS__
+         termios.c_cc[VQUIT] = _POSIX_VDISABLE;
+         termios.c_cc[VSUSP] = _POSIX_VDISABLE;
++#endif
+         // Some OSes have Ctrl-Y==VDSUSP
+ # ifdef VDSUSP
+         termios.c_cc[VDSUSP] = _POSIX_VDISABLE;
