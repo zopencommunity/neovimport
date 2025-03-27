@@ -1,13 +1,7 @@
 diff --git a/src/nvim/memfile.c b/src/nvim/memfile.c
-index d032caa3be..458f3678ca 100644
+index d032caa3be..44dba317a5 100644
 --- a/src/nvim/memfile.c
 +++ b/src/nvim/memfile.c
-@@ -1,4 +1,4 @@
--/// An abstraction to handle blocks of memory which can be stored in a file.
-+mf_do_open/// An abstraction to handle blocks of memory which can be stored in a file.
- /// This is the implementation of a sort of virtual memory.
- ///
- /// A memfile consists of a sequence of blocks:
 @@ -772,7 +772,6 @@ static bool mf_do_open(memfile_T *mfp, char *fname, int flags)
      emsg(_("E300: Swap file already exists (symlink attack?)"));
    } else {

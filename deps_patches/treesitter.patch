@@ -1,0 +1,25 @@
+diff --git a/lib/src/portable/endian.h b/lib/src/portable/endian.h
+index 51defc5e..37e47622 100644
+--- a/lib/src/portable/endian.h
++++ b/lib/src/portable/endian.h
+@@ -32,10 +32,19 @@
+ 
+ #elif defined(HAVE_SYS_ENDIAN_H) || \
+     defined(__FreeBSD__) || \
+-    defined(__DragonFly__)
++    defined(__DragonFly__) || \
++    defined(__MVS__)
+ 
+ # include <sys/endian.h>
+ 
++#if BYTE_ORDER == LITTLE_ENDIAN
++    #define le16toh(x) (x)                    // No conversion needed
++    #define be16toh(x) __builtin_bswap16(x)   // Swap bytes for big-endian
++#elif BYTE_ORDER == BIG_ENDIAN
++    #define le16toh(x) __builtin_bswap16(x)   // Swap bytes for little-endian
++    #define be16toh(x) (x)                    // No conversion needed
++#endif
++
+ #elif defined(__APPLE__)
+ #    define __BYTE_ORDER    BYTE_ORDER
+ #    define __BIG_ENDIAN    BIG_ENDIAN
