@@ -1,8 +1,8 @@
 diff --git a/src/thread.c b/src/thread.c
-index 7b3f1bc..8005442 100644
+index 89d7670..221edaf 100644
 --- a/src/thread.c
 +++ b/src/thread.c
-@@ -265,7 +265,7 @@ static int luv_thread_gc(lua_State* L) {
+@@ -274,7 +274,7 @@ static int luv_thread_gc(lua_State* L) {
  static int luv_thread_tostring(lua_State* L)
  {
    luv_thread_t* thd = luv_check_thread(L, 1);
@@ -11,7 +11,7 @@ index 7b3f1bc..8005442 100644
    return 1;
  }
  
-@@ -297,7 +297,7 @@ static void luv_thread_cb(void* varg) {
+@@ -306,7 +306,7 @@ static void luv_thread_cb(void* varg) {
  
  static void luv_thread_notify_close_cb(uv_handle_t *handle) {
    luv_thread_t *thread = handle->data;
@@ -20,7 +20,16 @@ index 7b3f1bc..8005442 100644
      uv_thread_join(&thread->handle);
  
    luaL_unref(thread->L, LUA_REGISTRYINDEX, thread->ref);
-@@ -487,7 +487,7 @@ static int luv_thread_join(lua_State* L) {
+@@ -497,7 +497,7 @@ static int luv_thread_detach(lua_State *L) {
+   luv_thread_t* tid = luv_check_thread(L, 1);
+   int ret = uv_thread_detach(&tid->handle);
+   if (ret < 0) return luv_error(L, ret);
+-  tid->handle = 0;
++  tid->handle.__ = 0;
+   lua_pushboolean(L, 1);
+   return 1;
+ }
+@@ -522,7 +522,7 @@ static int luv_thread_join(lua_State* L) {
    luv_thread_t* tid = luv_check_thread(L, 1);
    int ret = uv_thread_join(&tid->handle);
    if (ret < 0) return luv_error(L, ret);
