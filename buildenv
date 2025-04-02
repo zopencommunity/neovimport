@@ -3,7 +3,7 @@ NEOV_VERSION="0.11.0"
 
 export ZOPEN_STABLE_URL="https://github.com/neovim/neovim.git"
 export ZOPEN_CATEGORIES="editor"
-export ZOPEN_STABLE_DEPS="curl cmake make zoslib coreutils unzip zip gzip tar libuv getopt gettext lpeg patch sed"
+export ZOPEN_STABLE_DEPS="curl cmake make zoslib coreutils unzip zip gzip tar libuv getopt gettext lpeg patch sed zusage"
 export ZOPEN_BUILD_LINE="STABLE"
 export ZOPEN_COMP="CLANG"
 export ZOPEN_RUNTIME_DEPS="lpeg"
