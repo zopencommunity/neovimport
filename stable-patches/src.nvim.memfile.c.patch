@@ -1,0 +1,12 @@
+diff --git a/src/nvim/memfile.c b/src/nvim/memfile.c
+index d032caa3be..44dba317a5 100644
+--- a/src/nvim/memfile.c
++++ b/src/nvim/memfile.c
+@@ -772,7 +772,6 @@ static bool mf_do_open(memfile_T *mfp, char *fname, int flags)
+     emsg(_("E300: Swap file already exists (symlink attack?)"));
+   } else {
+     // try to open the file
+-    flags |= O_NOFOLLOW;
+     mfp->mf_flags = flags;
+     mfp->mf_fd = os_open(mfp->mf_fname, flags, S_IREAD | S_IWRITE);
+   }

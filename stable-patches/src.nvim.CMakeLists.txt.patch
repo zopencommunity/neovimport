@@ -1,8 +1,8 @@
 diff --git a/src/nvim/CMakeLists.txt b/src/nvim/CMakeLists.txt
-index ae2a7c76ed..2344988de5 100644
+index 2a60eefe7c..bfde223bd6 100644
 --- a/src/nvim/CMakeLists.txt
 +++ b/src/nvim/CMakeLists.txt
-@@ -134,10 +134,6 @@ elseif(CMAKE_C_COMPILER_ID MATCHES "Clang")
+@@ -136,10 +136,6 @@ elseif(CMAKE_C_COMPILER_ID MATCHES "Clang")
      target_compile_options(main_lib INTERFACE -Wno-c11-extensions)
    endif()
  
@@ -13,30 +13,30 @@ index ae2a7c76ed..2344988de5 100644
  endif()
  
  # Platform specific options
-@@ -532,7 +528,7 @@ foreach(sfile ${NVIM_SOURCES}
+@@ -561,7 +557,7 @@ foreach(sfile ${NVIM_SOURCES}
    if(MSVC)
      set(PREPROC_OUTPUT /P /Fi${gf_i} /nologo)
    else()
--    set(PREPROC_OUTPUT -E -o ${gf_i})
-+    set(PREPROC_OUTPUT -E)
+-    set(PREPROC_OUTPUT -w -E -o ${gf_i})
++    set(PREPROC_OUTPUT -w -E)
    endif()
  
-   set(depends "${HEADER_GENERATOR}" "${sfile}" "${LUA_GEN_DEPS}")
-@@ -540,9 +536,16 @@ foreach(sfile ${NVIM_SOURCES}
+   set(depends "${HEADER_GENERATOR}" "${sfile}" "${LUA_GEN_DEPS}" "${GENERATOR_C_GRAMMAR}")
+@@ -569,9 +565,16 @@ foreach(sfile ${NVIM_SOURCES}
      # Ensure auto/versiondef_git.h exists after "make clean".
      list(APPEND depends update_version_stamp "${NVIM_VERSION_GIT_H}" "${NVIM_VERSION_DEF_H}")
    endif()
 +
-+# Remove the leading and trailing quotes if they exist
-+string(REGEX REPLACE "^\"|\"$" "" EXTRA_CFLAGS ${EXTRA_CFLAGS})
++  # Remove the leading and trailing quotes if they exist
++  string(REGEX REPLACE "^\"|\"$" "" EXTRA_CFLAGS ${EXTRA_CFLAGS})
 +
-+# Split the string into a list based on spaces
-+string(REPLACE " " ";" C_FLAGS_LIST ${EXTRA_CFLAGS})
++  # Split the string into a list based on spaces
++  string(REPLACE " " ";" C_FLAGS_LIST ${EXTRA_CFLAGS})
 +
    add_custom_command(
-     OUTPUT "${gf_c_h}" "${gf_h_h}"
+     OUTPUT "${gf_c_h}" ${gf_h_h_out}
 -    COMMAND ${CMAKE_C_COMPILER} ${sfile} ${PREPROC_OUTPUT} ${gen_cflags}
 +    COMMAND ${CMAKE_C_COMPILER} ${sfile} ${PREPROC_OUTPUT} ${gen_cflags} ${C_FLAGS_LIST} > ${gf_i}
-     COMMAND ${LUA_GEN} "${HEADER_GENERATOR}" "${sfile}" "${gf_c_h}" "${gf_h_h}" "${gf_i}"
+     COMMAND ${LUA_GEN} "${HEADER_GENERATOR}" "${sfile}" "${gf_c_h}" "${gf_h_h}" "${gf_i}" "${gf_basename}"
      DEPENDS ${depends})
    list(APPEND NVIM_GENERATED_FOR_SOURCES "${gf_c_h}")
