@@ -1,5 +1,5 @@
 # bump: neovim-version /NEOV_VERSION="(.*)"/ https://github.com/neovim/neovim.git|semver:*
-NEOV_VERSION="0.11.1"
+NEOV_VERSION="0.11.2"
 
 export ZOPEN_STABLE_URL="https://github.com/neovim/neovim.git"
 export ZOPEN_CATEGORIES="editor"
