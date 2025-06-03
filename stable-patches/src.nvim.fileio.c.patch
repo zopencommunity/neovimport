@@ -1,0 +1,15 @@
+diff --git a/src/nvim/fileio.c b/src/nvim/fileio.c
+index b79ecf2..93b5ecf 100644
+--- a/src/nvim/fileio.c
++++ b/src/nvim/fileio.c
+@@ -440,6 +440,10 @@ int readfile(char *fname, char *sfname, linenr_T from, linenr_T lines_to_skip,
+     fd = os_open(fname, O_RDONLY, 0);
+   }
+ 
++#ifdef __MVS__
++  curbuf->needs_conversion = __file_needs_conversion(fd);
++#endif
++
+   if (fd < 0) {                     // cannot open at all
+     msg_scroll = msg_save;
+     if (!newfile) {
