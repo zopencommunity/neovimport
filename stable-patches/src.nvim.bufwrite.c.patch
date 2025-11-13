@@ -1,17 +1,17 @@
 diff --git a/src/nvim/bufwrite.c b/src/nvim/bufwrite.c
-index 27de03954a..35c0c754fc 100644
+index 3101407..7033983 100644
 --- a/src/nvim/bufwrite.c
 +++ b/src/nvim/bufwrite.c
-@@ -756,7 +756,7 @@ static int buf_write_make_backup(char *fname, bool append, FileInfo *file_info_o
+@@ -751,7 +751,7 @@ static int buf_write_make_backup(char *fname, bool append, FileInfo *file_info_o
          }
        }
-       int fd = os_open(IObuff,
+       int fd = os_open(tmp_fname,
 -                       O_CREAT|O_WRONLY|O_EXCL|O_NOFOLLOW, perm);
 +                       O_CREAT|O_WRONLY|O_EXCL, perm);
        if (fd < 0) {           // can't write in directory
          *backup_copyp = true;
        } else {
-@@ -1477,6 +1477,20 @@ restore_backup:
+@@ -1459,6 +1459,20 @@ restore_backup:
          }
          goto fail;
        }
@@ -32,7 +32,7 @@ index 27de03954a..35c0c754fc 100644
        write_info.bw_fd = fd;
      }
      err = set_err(NULL);
-@@ -1847,7 +1861,7 @@ restore_backup:
+@@ -1830,7 +1844,7 @@ restore_backup:
  
        if (org == NULL
            || (empty_fd = os_open(org,
