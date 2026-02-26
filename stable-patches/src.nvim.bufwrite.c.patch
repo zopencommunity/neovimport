@@ -1,8 +1,18 @@
 diff --git a/src/nvim/bufwrite.c b/src/nvim/bufwrite.c
-index 3101407..7033983 100644
+index e606f3d..61383ec 100644
 --- a/src/nvim/bufwrite.c
 +++ b/src/nvim/bufwrite.c
-@@ -751,7 +751,7 @@ static int buf_write_make_backup(char *fname, bool append, FileInfo *file_info_o
+@@ -51,6 +51,9 @@
+ #include "nvim/undo.h"
+ #include "nvim/undo_defs.h"
+ #include "nvim/vim_defs.h"
++#ifdef __MVS__
++#include <zos.h>
++#endif
+ 
+ static const char *err_readonly = "is read-only (cannot override: \"W\" in 'cpoptions')";
+ static const char e_patchmode_cant_touch_empty_original_file[]
+@@ -762,7 +765,7 @@ static int buf_write_make_backup(char *fname, bool append, FileInfo *file_info_o
          }
        }
        int fd = os_open(tmp_fname,
@@ -11,7 +21,7 @@ index 3101407..7033983 100644
        if (fd < 0) {           // can't write in directory
          *backup_copyp = true;
        } else {
-@@ -1459,6 +1459,20 @@ restore_backup:
+@@ -1472,6 +1475,20 @@ restore_backup:
          }
          goto fail;
        }
@@ -32,7 +42,7 @@ index 3101407..7033983 100644
        write_info.bw_fd = fd;
      }
      err = set_err(NULL);
-@@ -1830,7 +1844,7 @@ restore_backup:
+@@ -1843,7 +1860,7 @@ restore_backup:
  
        if (org == NULL
            || (empty_fd = os_open(org,

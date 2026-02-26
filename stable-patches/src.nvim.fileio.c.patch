@@ -1,8 +1,19 @@
 diff --git a/src/nvim/fileio.c b/src/nvim/fileio.c
-index b79ecf2..93b5ecf 100644
+index 6aa68fe..1d84a9f 100644
 --- a/src/nvim/fileio.c
 +++ b/src/nvim/fileio.c
-@@ -440,6 +440,10 @@ int readfile(char *fname, char *sfname, linenr_T from, linenr_T lines_to_skip,
+@@ -86,6 +86,10 @@
+ # include "nvim/charset.h"
+ #endif
+ 
++#ifdef __MVS__
++#include <zos.h>
++#endif
++
+ // For compatibility with libuv < 1.20.0 (tested on 1.18.0)
+ #ifndef UV_FS_COPYFILE_FICLONE
+ # define UV_FS_COPYFILE_FICLONE 0
+@@ -440,6 +444,10 @@ int readfile(char *fname, char *sfname, linenr_T from, linenr_T lines_to_skip,
      fd = os_open(fname, O_RDONLY, 0);
    }
  

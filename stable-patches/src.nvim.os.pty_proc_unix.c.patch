@@ -1,17 +1,8 @@
 diff --git a/src/nvim/os/pty_proc_unix.c b/src/nvim/os/pty_proc_unix.c
-index 1f90213..966141f 100644
+index 1f90213..09343f3 100644
 --- a/src/nvim/os/pty_proc_unix.c
 +++ b/src/nvim/os/pty_proc_unix.c
-@@ -15,6 +15,8 @@
- # include <libutil.h>
- #elif defined(__OpenBSD__) || defined(__NetBSD__) || defined(__APPLE__)
- # include <util.h>
-+#elif defined(__MVS__)
-+# include <fcntl.h>
- #elif defined(__sun)
- # include <fcntl.h>
- # include <signal.h>
-@@ -343,12 +345,14 @@ static void init_termios(struct termios *termios) FUNC_ATTR_NONNULL_ALL
+@@ -343,12 +343,14 @@ static void init_termios(struct termios *termios) FUNC_ATTR_NONNULL_ALL
    termios->c_cc[VERASE] = 0x7f;
    termios->c_cc[VKILL] = 0x1f & 'U';
    termios->c_cc[VEOF] = 0x1f & 'D';
