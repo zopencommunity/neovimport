@@ -1,7 +1,16 @@
 diff --git a/src/nvim/os/pty_proc_unix.c b/src/nvim/os/pty_proc_unix.c
-index 1f90213..09343f3 100644
+index 1f90213..84c7db5 100644
 --- a/src/nvim/os/pty_proc_unix.c
 +++ b/src/nvim/os/pty_proc_unix.c
+@@ -269,7 +269,7 @@ static void init_child(PtyProc *ptyproc)
+ {
+ #if defined(HAVE__NSGETENVIRON)
+ # define environ (*_NSGetEnviron())
+-#else
++#elif !defined(environ)
+   extern char **environ;
+ #endif
+   // New session/process-group. #6530
 @@ -343,12 +343,14 @@ static void init_termios(struct termios *termios) FUNC_ATTR_NONNULL_ALL
    termios->c_cc[VERASE] = 0x7f;
    termios->c_cc[VKILL] = 0x1f & 'U';
