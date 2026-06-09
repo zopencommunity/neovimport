@@ -1,42 +1,15 @@
 diff --git a/src/nvim/CMakeLists.txt b/src/nvim/CMakeLists.txt
-index 2a60eefe7c..bfde223bd6 100644
+index b8160fea4b..f229292592 100644
 --- a/src/nvim/CMakeLists.txt
 +++ b/src/nvim/CMakeLists.txt
-@@ -136,10 +136,6 @@ elseif(CMAKE_C_COMPILER_ID MATCHES "Clang")
+@@ -144,10 +144,6 @@ elseif(CMAKE_C_COMPILER_ID MATCHES "Clang")
      target_compile_options(main_lib INTERFACE -Wno-c11-extensions)
    endif()
- 
+
 -  # workaround for clang-11 on macOS, supported on later versions
--  if(NOT APPLE)
+-  if(NOT APPLE AND NOT CMAKE_CROSSCOMPILING)
 -    target_link_libraries(nvim_bin PRIVATE -Wl,--no-undefined)
 -  endif()
  endif()
- 
+
  # Platform specific options
-@@ -561,7 +557,7 @@ foreach(sfile ${NVIM_SOURCES}
-   if(MSVC)
-     set(PREPROC_OUTPUT /P /Fi${gf_i} /nologo)
-   else()
--    set(PREPROC_OUTPUT -w -E -o ${gf_i})
-+    set(PREPROC_OUTPUT -w -E)
-   endif()
- 
-   set(depends "${HEADER_GENERATOR}" "${sfile}" "${LUA_GEN_DEPS}" "${GENERATOR_C_GRAMMAR}")
-@@ -569,9 +565,16 @@ foreach(sfile ${NVIM_SOURCES}
-     # Ensure auto/versiondef_git.h exists after "make clean".
-     list(APPEND depends update_version_stamp "${NVIM_VERSION_GIT_H}" "${NVIM_VERSION_DEF_H}")
-   endif()
-+
-+  # Remove the leading and trailing quotes if they exist
-+  string(REGEX REPLACE "^\"|\"$" "" EXTRA_CFLAGS ${EXTRA_CFLAGS})
-+
-+  # Split the string into a list based on spaces
-+  string(REPLACE " " ";" C_FLAGS_LIST ${EXTRA_CFLAGS})
-+
-   add_custom_command(
-     OUTPUT "${gf_c_h}" ${gf_h_h_out}
--    COMMAND ${CMAKE_C_COMPILER} ${sfile} ${PREPROC_OUTPUT} ${gen_cflags}
-+    COMMAND ${CMAKE_C_COMPILER} ${sfile} ${PREPROC_OUTPUT} ${gen_cflags} ${C_FLAGS_LIST} > ${gf_i}
-     COMMAND ${LUA_GEN} "${HEADER_GENERATOR}" "${sfile}" "${gf_c_h}" "${gf_h_h}" "${gf_i}" "${gf_basename}"
-     DEPENDS ${depends})
-   list(APPEND NVIM_GENERATED_FOR_SOURCES "${gf_c_h}")
