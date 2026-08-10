@@ -1,5 +1,14 @@
-diff --git a/src/thread.c b/src/thread.c
-index 89d7670..221edaf 100644
+--- a/src/tcp.c
++++ b/src/tcp.c
+@@ -82,7 +82,7 @@
+   unsigned int delay = 0;
+   luaL_checktype(L, 2, LUA_TBOOLEAN);
+   enable = lua_toboolean(L, 2);
+-  #if LUV_UV_VERSION_GEQ(1, 52, 0)
++  #if LUV_UV_VERSION_GEQ(1, 52, 0) && !defined(__MVS__)
+   unsigned int intvl = 1; // defaults chosen in uv_tcp_keepalive on libuv 1.52.0
+   unsigned int cnt = 10; // defaults chosen in uv_tcp_keepalive on libuv 1.52.0
+   if (enable) {
 --- a/src/thread.c
 +++ b/src/thread.c
 @@ -274,7 +274,7 @@ static int luv_thread_gc(lua_State* L) {
